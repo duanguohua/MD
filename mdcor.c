@@ -1,6 +1,7 @@
 #include <stdio.h>
-
-
+#include <stdbool.h>
+#include <math.h>
+#include <stdlib.h>
 
 
 /*++++++++++++++++++++++++++全局常量+++++++++++++++++++++++++++++++++++*/
@@ -26,6 +27,10 @@ void OutputCor(void);           //输出体系原子坐标到cor.txt文件
 /*------------------输出参数-------------------*/
 void OutputPara(void);
 
+/*------------------产生速度-------------------*/
+void InitialVelocity(void);     //产生初速度
+double GaussRand(void);         //产生高斯随机数
+void OutputVelocity(void);      //输出速度到v.txt文件 
 
 /*++++++++++++++++++++++++++主函数+++++++++++++++++++++++++++++++++++*/
 int main(void)
@@ -43,7 +48,11 @@ void test(void)
 {
     N = BccCor(nside);      //产生坐标，确定原子数 
     OutputCor();            //输出坐标到cor.txt
+    
     OutputPara();           //输出体系参数 
+    
+    InitialVelocity();      //初始化速度 
+    OutputVelocity();       //输出速度 
      
 }
 
@@ -117,7 +126,76 @@ void OutputPara(void)
 }
 
 /*---------------------产生初速度的函数-----------------------*/
+void InitialVelocity(void)
+{   
+	int i, j;
+	double vall[3] = {0.0};    //速度的和与平均数 
+	
+	//分配Gauss随机数
+	for (i=0; i<N; i++)
+    {
+		for (j=0; j<3; j++)
+        {
+			v[i][j] = GaussRand();
+			vall[j] +=  v[i][j];
+		}
+	}
+	
+	//动量守恒， 求各方向上平均速度 
+	for (i=0; i<3; i++)		
+		vall[i] /= N; 
+	
+	for (i=0; i<N; i++)
+    {
+		for (j=0; j<3; j++)
+        {
+			v[i][j] -= vall[j];
+		}
+	}
+	//速度标定
+    //0K下应该不使用温度标定 
+    
+}
 
+//利用box-muller变换法，产生高斯随机数
+double GaussRand(void)
+{
+	static bool available = false;
+	static double gset;
+	double fac, rsq, v1, v2;
+	
+	if (! available)
+    {
+		do 
+        {
+			v1 = 2.0 * rand() / RAND_MAX - 1.0;
+			v2 = 2.0 * rand() / RAND_MAX - 1.0;
+			rsq = v1 * v1 + v2 * v2;
+		} while (rsq >= 1.0 || rsq == 0.0);
+		
+		fac = sqrt(-2.0 * log(rsq)/rsq);
+		gset = v1 * fac;
+		available = true;
+		return(v2 * fac);
+	}
+	else
+    {
+		available = false;
+		return gset;
+	}
+}
+
+//输出速度到v.txt文件 
+void OutputVelocity(void)
+{
+    FILE *fp = fopen("v.txt", "w");
+    int i;
+    for (i=0; i<N; i++)
+    {
+        fprintf(fp, "%d\t%lf\t%lf\t%lf\n", i, v[i][0], v[i][1], v[i][2]);
+    }
+    fclose(fp);
+}
 
 
 
