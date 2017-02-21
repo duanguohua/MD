@@ -8,8 +8,8 @@
 
 
 
-#define Nc 27               //Nc = nc[0] * nc[1] * nc[2];
-int nc[3] = {3, 3, 3};     //假设模拟盒子中，每边上的元胞数 
+#define Nc 64               //Nc = nc[0] * nc[1] * nc[2];
+int nc[3] = {4, 4, 4};     //假设模拟盒子中，每边上的元胞数 
 
 /*每个元胞其26个近邻元胞标量序号，
 不含其自身，因为下标即其自身 */
@@ -20,6 +20,7 @@ void CellNeighbor(void);                                    //每个元胞其26个近邻
 int CellVecto2Scale(int cx, int cy, int cz);                //由元胞向量序号得到其标量序号 
 void CellNeighborScale(int cell, int cx, int cy, int cz);   //由元胞向量序号得到其所有近邻元胞的标题序号
 void CellPeriod(int *a, int period);                        //对元胞在每个方向上执行周期性条件  
+void Outputncell(int ncell[][26]);                          //输出ncell[Nc][26]这个数组，用于md主程序读入并调用 
 
 void test(void);
 int main(void)
@@ -39,17 +40,7 @@ void test(void)
         printf("%d ", tmp);
     }*/
     CellNeighbor();
-    
-    int i, j;
-    for (i = 0; i < Nc; i++)
-    {
-        printf("%d ", i);
-        for (j = 0; j < 26; j++)
-        {
-            printf("%d ", ncell[i][j]);
-        }
-        putchar('\n');
-    }
+    Outputncell(ncell);
 }
 
 /*每个元胞其26个近邻元胞标量序号*/
@@ -137,4 +128,19 @@ void CellPeriod(int *a, int period)
     }
 }
 
+//输出ncell[Nc][26]这个数组，用于md主程序读入并调用 
+void Outputncell(int ncell[][26])
+{
+    int i, j;
+    FILE *fp = fopen("ncell.txt", "w");
+    for (i = 0; i < Nc; i++)
+    {
+        for (j = 0; j < 26; j++)
+        {
+            fprintf(fp, "%d ", ncell[i][j]);
+        }
+        fprintf(fp, "\n");
+    }
+    fclose(fp);
+}
 
