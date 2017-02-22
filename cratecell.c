@@ -26,7 +26,7 @@ int main(void)
 
 
 
-//得到元胞数和元胞边长
+//每个方向上的元胞数量和边长，及元胞总数
 void CalcuSubcell(void)
 {
     int i;
